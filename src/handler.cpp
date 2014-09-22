@@ -25,6 +25,16 @@ namespace node_osmium {
     v8::Persistent<v8::FunctionTemplate> JSHandler::constructor;
     v8::Persistent<v8::String> JSHandler::symbol_tagged_nodes_only;
 
+    extern OSMNodeWrap      node_wrap;
+    extern OSMWayWrap       way_wrap;
+    extern OSMRelationWrap  relation_wrap;
+    extern OSMChangesetWrap changeset_wrap;
+
+    extern v8::Persistent<v8::Object> node_object;
+    extern v8::Persistent<v8::Object> way_object;
+    extern v8::Persistent<v8::Object> relation_object;
+    extern v8::Persistent<v8::Object> changeset_object;
+
     void JSHandler::Initialize(v8::Handle<v8::Object> target) {
         v8::HandleScope scope;
         constructor = v8::Persistent<v8::FunctionTemplate>::New(v8::FunctionTemplate::New(JSHandler::New));
@@ -159,15 +169,13 @@ namespace node_osmium {
     }
 
     template <class TWrapped>
-    void call_callback_with_entity(v8::TryCatch& trycatch, const v8::Persistent<v8::Function>& function, const osmium::OSMEntity& entity) {
+    void call_callback_with_entity(v8::TryCatch& trycatch, const v8::Persistent<v8::Function>& function, const v8::Persistent<v8::Object>& obj) {
         if (function.IsEmpty()) {
             return;
         }
 
         v8::HandleScope scope;
-        v8::Handle<v8::Value> ext = v8::External::New(new TWrapped(entity));
-        v8::Local<v8::Object> obj = TWrapped::constructor->GetFunction()->NewInstance(1, &ext);
-        v8::Local<v8::Value> argv[1] = { obj };
+        v8::Persistent<v8::Value> argv[1] = { obj };
         function->Call(v8::Context::GetCurrent()->Global(), 1, argv);
     }
 
@@ -181,26 +189,30 @@ namespace node_osmium {
         function->Call(v8::Context::GetCurrent()->Global(), 0, argv);
     }
 
-    void JSHandler::dispatch_entity(v8::TryCatch& trycatch, const osmium::OSMEntity& entity) const {
+    void JSHandler::dispatch_entity(v8::TryCatch& trycatch, const osmium::OSMEntity& entity) {
         switch (entity.type()) {
             case osmium::item_type::node:
                 if (!node_cb.IsEmpty() && (!node_callback_for_tagged_only || !static_cast<const osmium::Node&>(entity).tags().empty())) {
-                    call_callback_with_entity<OSMNodeWrap>(trycatch, node_cb, entity);
+                    node_wrap.set_entity(&entity);
+                    call_callback_with_entity<OSMNodeWrap>(trycatch, node_cb, node_object);
                 }
                 break;
             case osmium::item_type::way:
                 if (!way_cb.IsEmpty()) {
-                    call_callback_with_entity<OSMWayWrap>(trycatch, way_cb, entity);
+                    way_wrap.set_entity(&entity);
+                    call_callback_with_entity<OSMWayWrap>(trycatch, way_cb, way_object);
                 }
                 break;
             case osmium::item_type::relation:
                 if (!relation_cb.IsEmpty()) {
-                    call_callback_with_entity<OSMRelationWrap>(trycatch, relation_cb, entity);
+                    relation_wrap.set_entity(&entity);
+                    call_callback_with_entity<OSMRelationWrap>(trycatch, relation_cb, relation_object);
                 }
                 break;
             case osmium::item_type::changeset:
                 if (!changeset_cb.IsEmpty()) {
-                    call_callback_with_entity<OSMChangesetWrap>(trycatch, changeset_cb, entity);
+                    changeset_wrap.set_entity(&entity);
+                    call_callback_with_entity<OSMChangesetWrap>(trycatch, changeset_cb, changeset_object);
                 }
                 break;
             default:

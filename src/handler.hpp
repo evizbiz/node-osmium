@@ -12,6 +12,11 @@
 #include <node_object_wrap.h>
 
 // osmium
+#include <osm_node_wrap.hpp>
+#include <osm_way_wrap.hpp>
+#include <osm_relation_wrap.hpp>
+#include <osm_changeset_wrap.hpp>
+
 namespace osmium {
     class OSMEntity;
 }
@@ -59,7 +64,7 @@ namespace node_osmium {
             return *this;
         }
 
-        void dispatch_entity(v8::TryCatch& trycatch, const osmium::OSMEntity& entity) const;
+        void dispatch_entity(v8::TryCatch& trycatch, const osmium::OSMEntity& entity);
 
         void init(v8::TryCatch& trycatch) const;
         void before_nodes(v8::TryCatch& trycatch) const;

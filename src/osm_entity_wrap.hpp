@@ -63,12 +63,19 @@ namespace node_osmium {
         static void Initialize(v8::Handle<v8::Object> target);
         static v8::Handle<v8::Value> New(const v8::Arguments& args);
 
-        OSMEntityWrap(const osmium::OSMEntity& entity) :
-            m_entity(&entity) {
+        OSMEntityWrap(const osmium::OSMEntity* entity) :
+            m_entity(entity) {
         }
+
+        OSMEntityWrap(const OSMEntityWrap&) = delete;
+        OSMEntityWrap& operator=(const OSMEntityWrap&) = delete;
 
         const osmium::OSMEntity& get() {
             return *m_entity;
+        }
+
+        void set_entity(const osmium::OSMEntity* entity) {
+            m_entity = entity;
         }
 
     }; // class OSMEntityWrap

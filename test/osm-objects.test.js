@@ -178,4 +178,22 @@ describe('basic', function() {
         osmium.apply(reader, handler);
     });
 
+/*
+   it('can not access objects outside handler', function(done) {
+        var handler = new osmium.Handler();
+
+        var x;
+        handler.on('node', function(node) {
+            x=node;
+        });
+        handler.on('after_nodes', function() {
+            assert.equal(x.id, undefined);
+        });
+
+        var file = new osmium.File(__dirname + "/data/winthrop.osm");
+        var reader = new osmium.Reader(file);
+        osmium.apply(reader, handler);
+        done();
+   });
+*/
 });

@@ -43,7 +43,7 @@ namespace node_osmium {
             return static_cast<const osmium::Changeset&>(unwrap<OSMEntityWrap>(object));
         }
 
-        OSMChangesetWrap(const osmium::OSMEntity& entity) :
+        OSMChangesetWrap(const osmium::OSMEntity* entity) :
             OSMEntityWrap(entity) {
         }
 
